@@ -1,8 +1,8 @@
-# playground rust application with webUI
+# Playground rust application with webUI
 Developed under linux.
 
 ## Prerequisite
-- Installed rust programming environmen +1.51
+- Installed rust programming environment +1.51
 
 ## Build
 
@@ -10,7 +10,7 @@ Developed under linux.
 cargo build
 ```
 
-## Run (for testing with log on the console)
+## Run (everything after -- are program arguments)
 ```
 cargo run -- --ui
 ```
