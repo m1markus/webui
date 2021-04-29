@@ -14,3 +14,4 @@ cargo build
 ```
 cargo run -- --ui
 ```
+It wil run ./target/debug/webapp
