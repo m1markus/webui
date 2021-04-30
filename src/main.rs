@@ -1,3 +1,8 @@
+#[macro_use]
+extern crate log;
+
+use simple_log::LogConfigBuilder;
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use std::process::Command;
 use std::thread;
@@ -33,6 +38,12 @@ async fn main() -> std::io::Result<()> {
                 .help("Start the WebUI")
                 .long("ui"),
         )
+        .arg(
+            clap::Arg::with_name("loglevel")
+            .help("Levels can be debug|info|warn|error")
+            .value_name("LEVEL")
+            .long("loglevel"),
+        )
         .arg(clap::Arg::with_name("port").value_name("PORT").long("port"))
         .get_matches();
 
@@ -40,11 +51,14 @@ async fn main() -> std::io::Result<()> {
         show_ui = true;
     }
 
+    let loglevel = matches.value_of("loglevel").unwrap_or("warn");
+    setup_logging(&loglevel);
+
     let port = matches.value_of("port").unwrap_or("8080");
     let bind_ip_port = format!("127.0.0.1:{}", port);
     let web_url = format!("http://{}", bind_ip_port);
 
-    println!("starting webapp...{}", web_url);
+    info!("starting webapp...{}", web_url);
 
     if show_ui {
         thread::spawn(|| {
@@ -64,6 +78,29 @@ async fn main() -> std::io::Result<()> {
     .bind(bind_ip_port)?
     .run()
     .await
+}
+
+fn setup_logging(level: &str) {
+    
+    // https://docs.rs/simple-log/1.0.2/simple_log/
+    //
+    let config = LogConfigBuilder::builder()
+        //   .path("./log/builder_log.log")
+        //   .size(1 * 100)
+        //   .roll_count(10)
+        //   .output_file()
+        .level(level)
+        .output_console()
+        .build();
+
+    simple_log::new(config).unwrap();
+    //simple_log::quick().unwrap();
+
+    // level testers
+    //
+    //error!("test quick error");
+    //debug!("test quick debug");
+    //info!("test quick info");
 }
 
 fn start_browser_window(ui_url: String) {
@@ -88,23 +125,27 @@ fn wait_til_web_server_is_ready(ui_url: &String) {
     // force an error
     //let ready_url = format!("{}", "http://xxx.example.com/z/y/z.txt");
 
-    println!("wait for webapp to be ready...{}", &ready_url);
+    info!("wait for webapp to be ready...{}", &ready_url);
 
     loop {
+        // https://github.com/algesten/ureq
+        //
         match ureq::get(&ready_url).call() {
             Ok(response) => {
                 let http_version = response.http_version();
-                println!("http GET url={} server response success http_version={}, let's launch the web-ui",
+                info!("http GET url={} server response success http_version={}, let's launch the web-ui",
                 &ready_url, http_version);
                 break;
             }
             Err(ureq::Error::Status(code, response)) => {
                 let http_version = response.http_version();
-                println!("http GET url={} server response with error http_code={} http_version={}",
-                &ready_url, code, http_version);
+                error!(
+                    "http GET url={} server response with error http_code={} http_version={}",
+                    &ready_url, code, http_version
+                );
             }
             Err(_) => {
-                println!("http GET general error: ");
+                error!("http GET general error: ");
             }
         }
 
