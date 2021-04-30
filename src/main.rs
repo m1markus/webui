@@ -13,8 +13,8 @@ async fn echo(req_body: String) -> impl Responder {
     HttpResponse::Ok().body(req_body)
 }
 
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+async fn manual_is_ready() -> impl Responder {
+    HttpResponse::Ok().body("ok")
 }
 
 #[actix_web::main]
@@ -59,7 +59,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(hello)
             .service(echo)
-            .route("/hey", web::get().to(manual_hello))
+            .route("/ready", web::get().to(manual_is_ready))
     })
     .bind(bind_ip_port)?
     .run()
@@ -67,17 +67,49 @@ async fn main() -> std::io::Result<()> {
 }
 
 fn start_browser_window(ui_url: String) {
-    // FIXME: use rest client to check when the url delivers a result
-    thread::sleep(Duration::from_millis(1000));
+    wait_til_web_server_is_ready(&ui_url);
 
-    //let ui_url = String::from("http://localhost:8080/");
+    let mut chrome_exe_name = String::from("chrome");
+    if cfg!(target_os = "windows") {
+        chrome_exe_name.push_str(".exe");
+    }
 
     let arg_app_url = format!("--app={}", ui_url);
-    Command::new("/opt/google/chrome/chrome")
+    Command::new(chrome_exe_name)
         .arg(arg_app_url)
         // FIXME: size the windows as needed
+        //.arg(arg_browser_size)
         .output()
         .expect("failed to execute process");
+}
+
+fn wait_til_web_server_is_ready(ui_url: &String) {
+    let ready_url = format!("{}/ready", ui_url);
+    // force an error
+    //let ready_url = format!("{}", "http://xxx.example.com/z/y/z.txt");
+
+    println!("wait for webapp to be ready...{}", &ready_url);
+
+    loop {
+        match ureq::get(&ready_url).call() {
+            Ok(response) => {
+                let http_version = response.http_version();
+                println!("http GET url={} server response success http_version={}, let's launch the web-ui",
+                &ready_url, http_version);
+                break;
+            }
+            Err(ureq::Error::Status(code, response)) => {
+                let http_version = response.http_version();
+                println!("http GET url={} server response with error http_code={} http_version={}",
+                &ready_url, code, http_version);
+            }
+            Err(_) => {
+                println!("http GET general error: ");
+            }
+        }
+
+        thread::sleep(Duration::from_millis(100));
+    }
 }
 
 /*

@@ -11,3 +11,5 @@ edition = "2018"
 clap = "2.33.3"
 # web framework
 actix-web = "3"
+# http client
+ureq = "2.1.1"
