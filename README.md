@@ -15,3 +15,6 @@ cargo build
 cargo run -- --ui
 ```
 It wil run ./target/debug/webapp
+
+## Lern Rust
+[https://learning-rust.github.io/](https://learning-rust.github.io/)
