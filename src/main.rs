@@ -66,7 +66,7 @@ async fn main() -> std::io::Result<()> {
 }
 
 fn build_command_line_args() -> clap::ArgMatches<'static> {
-    // handle command line arguments
+    //
     // https://docs.rs/clap/2.33.3/clap/
     //
     return clap::App::new("webapp")
@@ -87,6 +87,7 @@ fn build_command_line_args() -> clap::ArgMatches<'static> {
 }
 
 fn setup_logging(level: &str) {
+    //
     // https://docs.rs/simple-log/1.0.2/simple_log/
     //
     let config = LogConfigBuilder::builder()
@@ -127,8 +128,6 @@ fn start_browser_window(ui_url: String) {
 
 fn wait_til_web_server_is_ready(ui_url: &String) {
     let ready_url = format!("{}/ready", ui_url);
-    // force an error
-    //let ready_url = format!("{}", "http://xxx.example.com/z/y/z.txt");
 
     info!("wait for webapp to be ready...{}", &ready_url);
 
@@ -159,8 +158,7 @@ fn wait_til_web_server_is_ready(ui_url: &String) {
 }
 
 /*
-
-// old debug test (async is not easy to debug)
+// use to debug (async is not easy to debug)
 //
 fn main() {
     let mynum1 = 10;
@@ -175,5 +173,4 @@ fn main() {
         }
     }
 }
-
 */
