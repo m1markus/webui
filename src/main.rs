@@ -10,6 +10,7 @@ use std::time::Duration;
 
 #[get("/")]
 async fn hello() -> impl Responder {
+    info!("url / requested");
     HttpResponse::Ok().body("Hello world!")
 }
 
@@ -28,33 +29,15 @@ async fn main() -> std::io::Result<()> {
     //
     let mut show_ui = false;
 
-    // handle command line arguments
-    // https://docs.rs/clap/2.33.3/clap/
-    //
-    let matches = clap::App::new("webapp")
-        .version(clap::crate_version!())
-        .arg(
-            clap::Arg::with_name("ui")
-                .help("Start the WebUI")
-                .long("ui"),
-        )
-        .arg(
-            clap::Arg::with_name("loglevel")
-            .help("Levels can be debug|info|warn|error")
-            .value_name("LEVEL")
-            .long("loglevel"),
-        )
-        .arg(clap::Arg::with_name("port").value_name("PORT").long("port"))
-        .get_matches();
-
-    if matches.is_present("ui") {
+    let arg_matches = build_command_line_args();
+    if arg_matches.is_present("ui") {
         show_ui = true;
     }
 
-    let loglevel = matches.value_of("loglevel").unwrap_or("warn");
+    let loglevel = arg_matches.value_of("loglevel").unwrap_or("warn");
     setup_logging(&loglevel);
 
-    let port = matches.value_of("port").unwrap_or("8080");
+    let port = arg_matches.value_of("port").unwrap_or("8080");
     let bind_ip_port = format!("127.0.0.1:{}", port);
     let web_url = format!("http://{}", bind_ip_port);
 
@@ -80,8 +63,28 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
+fn build_command_line_args() -> clap::ArgMatches<'static> {
+    // handle command line arguments
+    // https://docs.rs/clap/2.33.3/clap/
+    //
+    return clap::App::new("webapp")
+        .version(clap::crate_version!())
+        .arg(
+            clap::Arg::with_name("ui")
+                .help("Start the WebUI")
+                .long("ui"),
+        )
+        .arg(
+            clap::Arg::with_name("loglevel")
+                .help("Levels can be debug|info|warn|error")
+                .value_name("LEVEL")
+                .long("loglevel"),
+        )
+        .arg(clap::Arg::with_name("port").value_name("PORT").long("port"))
+        .get_matches();
+}
+
 fn setup_logging(level: &str) {
-    
     // https://docs.rs/simple-log/1.0.2/simple_log/
     //
     let config = LogConfigBuilder::builder()
