@@ -27,17 +27,19 @@ async fn manual_is_ready() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     // set defaults
     //
+    const DEFAULT_LOGLEVEL: &str = "warn";
+    const DEFAULT_PORT: &str = "8080";
     let mut show_ui = false;
 
-    let arg_matches = build_command_line_args();
-    if arg_matches.is_present("ui") {
+    let cliarg = build_command_line_args();
+    if cliarg.is_present("ui") {
         show_ui = true;
     }
 
-    let loglevel = arg_matches.value_of("loglevel").unwrap_or("warn");
+    let loglevel = cliarg.value_of("loglevel").unwrap_or(DEFAULT_LOGLEVEL);
     setup_logging(&loglevel);
 
-    let port = arg_matches.value_of("port").unwrap_or("8080");
+    let port = cliarg.value_of("port").unwrap_or(DEFAULT_PORT);
     let bind_ip_port = format!("127.0.0.1:{}", port);
     let web_url = format!("http://{}", bind_ip_port);
 
