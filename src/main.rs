@@ -28,6 +28,7 @@ async fn main() -> std::io::Result<()> {
     // set defaults
     //
     const DEFAULT_LOGLEVEL: &str = "warn";
+    const DEFAULT_BIND_IP: &str = "127.0.0.1";
     const DEFAULT_PORT: &str = "8080";
     let mut show_ui = false;
 
@@ -38,18 +39,21 @@ async fn main() -> std::io::Result<()> {
 
     let loglevel = cliarg.value_of("loglevel").unwrap_or(DEFAULT_LOGLEVEL);
     setup_logging(&loglevel);
+    info!("starting application...");
 
     let port = cliarg.value_of("port").unwrap_or(DEFAULT_PORT);
-    let bind_ip_port = format!("127.0.0.1:{}", port);
-    let web_url = format!("http://{}", bind_ip_port);
+    let bind_ip = cliarg.value_of("ip").unwrap_or(DEFAULT_BIND_IP);
 
-    info!("starting webapp...{}", web_url);
+    let bind_ip_port = format!("{}:{}", bind_ip, port);
+    let web_url = format!("http://{}", bind_ip_port);
 
     if show_ui {
         thread::spawn(|| {
             start_browser_window(web_url);
         });
     }
+
+    info!("binding on ip {}", bind_ip_port);
 
     // start web server
     // https://actix.rs/docs/getting-started/
@@ -75,6 +79,12 @@ fn build_command_line_args() -> clap::ArgMatches<'static> {
             clap::Arg::with_name("ui")
                 .help("Start the WebUI")
                 .long("ui"),
+        )
+        .arg(
+            clap::Arg::with_name("ip")
+                .help("Bind IP address e.g. 0.0.0.0 for all")
+                .value_name("IP_ADDR")
+                .long("ip"),
         )
         .arg(
             clap::Arg::with_name("loglevel")
