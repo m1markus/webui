@@ -2,7 +2,7 @@
 extern crate log;
 
 use simple_log::LogConfigBuilder;
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, /* post, */ web, App, HttpResponse, HttpServer, Responder};
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
