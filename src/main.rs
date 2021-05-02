@@ -2,7 +2,10 @@
 extern crate log;
 
 use simple_log::LogConfigBuilder;
-use actix_web::{get, /* post, */ web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, /* post, HttpRequest,*/ web, App, HttpResponse, 
+    HttpServer, Responder, Result};
+use actix_files::NamedFile;
+use std::path::Path;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
@@ -32,7 +35,22 @@ async fn get_status() -> impl Responder {
 }
 
 async fn manual_is_ready() -> impl Responder {
+    info!("requested url /ready");
     HttpResponse::Ok().body("ok")
+}
+
+#[get("/pdf")]
+async fn pdf() -> Result<NamedFile> {
+    info!("requested url /pdf");
+    let path = Path::new("/home/mue/Downloads/sample.pdf");
+    Ok(NamedFile::open(path)?)
+}
+
+#[get("/favicon.ico")]
+async fn favicon() -> Result<NamedFile> {
+    info!("requested url /favicon.ico");
+    let path = Path::new("/home/mue/Downloads/favicon.ico");
+    Ok(NamedFile::open(path)?)
 }
 
 #[actix_web::main]
@@ -74,6 +92,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(hello)
             .service(get_status)
+            .service(pdf)
+            .service(favicon)
             .service(actix_files::Files::new("/static", "/tmp").show_files_listing())
             .route("/ready", web::get().to(manual_is_ready))
     })
