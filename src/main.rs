@@ -2,21 +2,33 @@
 extern crate log;
 
 use simple_log::LogConfigBuilder;
-
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
+use serde::{Deserialize, Serialize};
+
+// upload...
+// https://medium.com/swlh/build-your-first-rest-api-using-rust-language-and-actix-framework-8f827175b30f
 
 #[get("/")]
 async fn hello() -> impl Responder {
-    info!("url / requested");
+    info!("requested url /");
     HttpResponse::Ok().body("Hello world!")
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+#[derive(Serialize, Deserialize, Debug)]
+struct AppStatus {
+    version: String,
+}
+
+#[get("/status")]
+async fn get_status() -> impl Responder {
+    let app_status = AppStatus {
+        version: String::from(clap::crate_version!()),
+    };
+    info!("requested url /status");
+    HttpResponse::Ok().json(app_status)
 }
 
 async fn manual_is_ready() -> impl Responder {
@@ -61,7 +73,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .service(hello)
-            .service(echo)
+            .service(get_status)
+            .service(actix_files::Files::new("/static", "/tmp").show_files_listing())
             .route("/ready", web::get().to(manual_is_ready))
     })
     .bind(bind_ip_port)?
@@ -112,11 +125,12 @@ fn setup_logging(level: &str) {
     simple_log::new(config).unwrap();
     //simple_log::quick().unwrap();
 
-    // level testers
+    // test some levels
     //
     //error!("test quick error");
-    //debug!("test quick debug");
+    //warn!("test quick warn");
     //info!("test quick info");
+    //debug!("test quick debug");
 }
 
 fn start_browser_window(ui_url: String) {
@@ -137,7 +151,7 @@ fn start_browser_window(ui_url: String) {
 }
 
 fn wait_til_web_server_is_ready(ui_url: &String) {
-    let ready_url = format!("{}/ready", ui_url);
+    let ready_url = format!("{}/status", ui_url);
 
     info!("wait for webapp to be ready...{}", &ready_url);
 
