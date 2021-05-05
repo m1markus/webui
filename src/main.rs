@@ -4,6 +4,7 @@ extern crate log;
 use simple_log::LogConfigBuilder;
 use actix_web::{get, /* post, HttpRequest,*/ web, App, HttpResponse, 
     HttpServer, Responder, Result};
+use actix_web::cookie::Cookie;
 use actix_files::NamedFile;
 use std::path::Path;
 use std::process::Command;
@@ -17,7 +18,20 @@ use serde::{Deserialize, Serialize};
 #[get("/")]
 async fn hello() -> impl Responder {
     info!("requested url /");
-    HttpResponse::Ok().body("Hello world!")
+
+    let req_token_cookie: Cookie = Cookie::build("authtokenreq", "deadbeef")
+        .domain("example.com")
+        .path("/")
+        .secure(false)
+        .http_only(true)
+        .max_age(time::Duration::minutes(24*60))
+        .finish();
+
+    info!("cookie created {}", req_token_cookie);
+
+    HttpResponse::Ok()
+        .cookie(req_token_cookie)
+        .body("Hello world!")
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -75,7 +89,8 @@ async fn main() -> std::io::Result<()> {
     let bind_ip = cliarg.value_of("ip").unwrap_or(DEFAULT_BIND_IP);
 
     let bind_ip_port = format!("{}:{}", bind_ip, port);
-    let web_url = format!("http://{}", bind_ip_port);
+    //let web_url = format!("http://{}", bind_ip_port);
+    let web_url = format!("http://example.com:{}", port);
 
     if show_ui {
         thread::spawn(|| {
@@ -156,13 +171,34 @@ fn setup_logging(level: &str) {
 fn start_browser_window(ui_url: String) {
     wait_til_web_server_is_ready(&ui_url);
 
-    let mut chrome_exe_name = String::from("chrome");
-    if cfg!(target_os = "windows") {
-        chrome_exe_name.push_str(".exe");
+    if cfg!(target_os = "macos") {
+        start_chrome_on_osx(ui_url);
+        //warn!("browser start not implemented");
+    } else if cfg!(unix) {
+        start_chrome("chrome".to_string(), ui_url);
+    } else if cfg!(target_os = "windows") {
+        start_chrome("chrome.exe".to_string(), ui_url);
+    } else {
+        warn!("browser start not implemented (default)");
     }
+}
 
+// osx: open -a "Google Chrome" "$1"
+
+fn start_chrome_on_osx(ui_url: String) {
+    Command::new("open")
+        .arg("-a")
+        .arg("Google Chrome")
+        .arg(ui_url)
+        // FIXME: size the windows as needed
+        //.arg(arg_browser_size)
+        .output()
+        .expect("failed to execute process");
+}
+
+fn start_chrome(bin_name: String, ui_url: String) {
     let arg_app_url = format!("--app={}", ui_url);
-    Command::new(chrome_exe_name)
+    Command::new(bin_name)
         .arg(arg_app_url)
         // FIXME: size the windows as needed
         //.arg(arg_browser_size)
