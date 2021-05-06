@@ -253,4 +253,40 @@ fn main() {
         }
     }
 }
+
+// ******************* google authenticator *******************
+
+// [dependencies]
+// google-authenticator = "0.2.0"
+// qrcode-generator = "4.1.0"
+
+use google_authenticator::GoogleAuthenticator;
+use qrcode_generator::QrCodeEcc;
+
+fn main() {
+
+    // google authenticator
+    // https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+    //
+    let auth = GoogleAuthenticator::new();
+    let secret_seed = auth.create_secret(48);
+    println!("generated secret is: {}", secret_seed);
+    let code_given_by_user = auth.get_code(&secret_seed, 0).unwrap();
+    println!("code is: {}", code_given_by_user);
+    let verify_result = auth.verify_code(&secret_seed, &code_given_by_user, 1, 0);
+    println!("verify is: {}", verify_result);
+
+    let qr_code_data = google_authenticator_generate_data_string("m1m", &secret_seed);
+
+    let output_qr_file = "/tmp/qr_file_output.png";
+    qrcode_generator::to_png_to_file(qr_code_data, QrCodeEcc::Medium, 1024, output_qr_file).unwrap();
+    println!("qr file created at: file://{}", output_qr_file);
+}
+
+fn google_authenticator_generate_data_string(issuer: &str, secret_seed: &str) -> String {
+    // generate something like this
+    // otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
+    //format!("otpauth://totp/{}?secret={}&issuer={}", issuer, secret_seed, issuer)
+    format!("otpauth://totp/{}?secret={}", issuer, secret_seed)
+}
 */
