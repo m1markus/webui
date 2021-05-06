@@ -1,30 +1,40 @@
 #[macro_use]
 extern crate log;
 
-use simple_log::LogConfigBuilder;
-use actix_web::{get, /* post, HttpRequest,*/ web, App, HttpResponse, 
-    HttpServer, Responder, Result};
-use actix_web::cookie::Cookie;
 use actix_files::NamedFile;
+use actix_web::cookie::Cookie;
+use actix_web::{
+    get, web, App, /* post,*/ HttpRequest, HttpResponse, HttpServer, Responder, Result,
+};
+use serde::{Deserialize, Serialize};
+use simple_log::LogConfigBuilder;
 use std::path::Path;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
-use serde::{Deserialize, Serialize};
 
 // upload...
 // https://medium.com/swlh/build-your-first-rest-api-using-rust-language-and-actix-framework-8f827175b30f
-
 #[get("/")]
-async fn hello() -> impl Responder {
+async fn hello(req: HttpRequest) -> impl Responder {
     info!("requested url /");
+
+    match req.headers().get("host") {
+        None => (),
+        Some(req_hdr_host) => match req_hdr_host.to_str() {
+            Err(_) => (),
+            Ok(host_header_value) => {
+                info!("in request header 'host' is: {}", host_header_value);
+            }
+        },
+    }
 
     let req_token_cookie: Cookie = Cookie::build("authtokenreq", "deadbeef")
         .domain("example.com")
         .path("/")
         .secure(false)
         .http_only(true)
-        .max_age(time::Duration::minutes(24*60))
+        .max_age(time::Duration::minutes(24 * 60))
         .finish();
 
     info!("cookie created {}", req_token_cookie);
