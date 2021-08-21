@@ -19,3 +19,4 @@ log = "0.4.14"
 simple-log = "1.0.2"
 # json
 serde = "1.0"
+config = "0.11"

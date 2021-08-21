@@ -12,12 +12,33 @@ use std::path::Path;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
+use std::fs;
+use std::env;
 
 // upload...
 // https://medium.com/swlh/build-your-first-rest-api-using-rust-language-and-actix-framework-8f827175b30f
-#[get("/")]
+
+#[get("/*")]
 async fn hello(req: HttpRequest) -> impl Responder {
-    info!("requested url /");
+    let mut path = req.path();
+    if path == "/" {
+        path = "/index.html";
+    }
+
+    info!("requested url: {}", path);
+
+    //let static_resource_directory = "/home/mue/work/git/webapp/res";
+    let static_resource_directory = "./res";
+
+    let mut curr_dir = env::current_dir().unwrap();
+    info!("current directory is: {}", curr_dir.display());
+    curr_dir.push("res");
+    info!("resource directory is: {}", curr_dir.display());
+
+    // path is allready prefixed with: '/'
+    let full_path = format!("{}{}", static_resource_directory, path);
+
+    info!("path in filesystem: {}", full_path);
 
     match req.headers().get("host") {
         None => (),
@@ -39,9 +60,17 @@ async fn hello(req: HttpRequest) -> impl Responder {
 
     info!("cookie created {}", req_token_cookie);
 
+    let file_content_body: String;
+
+    // FIXME: make the code async
+    match fs::read_to_string(full_path) {
+        Err(_) => file_content_body = format!("file not found: {}", path),
+        Ok(content_body) => file_content_body = content_body    
+    }
+
     HttpResponse::Ok()
-        .cookie(req_token_cookie)
-        .body("Hello world!")
+    .cookie(req_token_cookie)
+    .body(file_content_body)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -95,6 +124,16 @@ async fn main() -> std::io::Result<()> {
     setup_logging(&loglevel);
     info!("starting application...");
 
+    let mut settings = config::Config::default();
+    settings
+        .merge(config::File::with_name("Settings")).unwrap()
+        .merge(config::Environment::with_prefix("APP")).unwrap();
+
+    match settings.get_str("loglevel") {
+        Ok(loglevel) => info!("loglevel from config file is: {}", loglevel),
+        Err(e) => info!("loglevel not found in config file: {}", e),
+    }
+
     let port = cliarg.value_of("port").unwrap_or(DEFAULT_PORT);
     let bind_ip = cliarg.value_of("ip").unwrap_or(DEFAULT_BIND_IP);
 
@@ -115,11 +154,11 @@ async fn main() -> std::io::Result<()> {
     //
     HttpServer::new(|| {
         App::new()
-            .service(hello)
             .service(get_status)
             .service(pdf)
             .service(favicon)
             .service(actix_files::Files::new("/static", "/tmp").show_files_listing())
+            .service(hello)
             .route("/ready", web::get().to(manual_is_ready))
     })
     .bind(bind_ip_port)?

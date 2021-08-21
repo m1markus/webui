@@ -1,27 +1,123 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
+
 <body>
   <div id="app">
     <v-app>
-      <v-main>
-        <v-container>Hello world</v-container>
+      <v-app-bar app class="teal darken-2"></v-app-bar>
+      <v-main class="teal darken-2">
+        <v-container class="white--text">Hello world</v-container>
+        <v-container>
+          <v-text-field v-model="email" label="E-mail" />
+        </v-container>
+        <v-container>
+          <v-text-field v-model="password" label="Password" />
+        </v-container>
+        <v-container>
+          <v-btn color="teal darken-4">Login {{hello}}</v-btn>
+          <v-btn v-on:click="play" color="teal darken-4">Play</v-btn>
+          <v-btn v-on:click="play2" color="teal darken-4">Play2</v-btn>
+
+        </v-container>
+        <!--
+        <iframe width="640" height="360" 
+          src="https://www.youtube.com/embed/XXYlFuWEuKI?autoplay=1"
+          allow="autoplay">
+        </iframe> -->
+
+        <div id="ytplayer"></div>
+
+        <!--
+        <iframe title="YouTube video player" class="youtube-player" type="text/html" width="560" height="345" src="http://www.youtube.com/embed/8v_4O44sfjM?autoplay=1" frameborder="0" allowFullScreen></iframe>
+        -->
       </v-main>
     </v-app>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
   <script>
+
+    var player;
+
+    function onYouTubePlayerAPIReady() {
+      
+      player = new YT.Player('ytplayer', {
+        height: '360',
+        width: '640',
+        videoId: 'XXYlFuWEuKI',
+        playerVars: {
+          autoplay: 1,
+        }
+      }); 
+    }
+
     new Vue({
       el: '#app',
-      vuetify: new Vuetify(),
+      data: { hello: 'Hello World' },
+      methods: {
+        play: function (event) {
+          // https://www.youtube.com/watch?v=XXYlFuWEuKI
+          // Change "watch?v=" to "embed/"
+          // https://www.youtube.com/embed/XXYlFuWEuKI
+          //
+          //https://youtu.be/4NRXx6U8ABQ
+          //
+          //
+          // paste from: https://developers.google.com/youtube/player_parameters
+          //
+          // Load the IFrame Player API code asynchronously.
+          var tag = document.createElement('script');
+          tag.src = "https://www.youtube.com/player_api";
+          var firstScriptTag = document.getElementsByTagName('script')[0];
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+          // Replace the 'ytplayer' element with an <iframe> and
+          // YouTube player after the API code downloads.
+
+
+          // end paste
+        },
+
+        play2: function (event) {
+
+          //player.playVideo()
+          //player.pauseVideo()
+          // https://developers.google.com/youtube/iframe_api_reference#loadVideoById
+          player.loadVideoById('4NRXx6U8ABQ')
+
+          /*
+          player = new YT.Player('ytplayer', {
+            height: '360',
+            width: '640',
+            videoId: '4NRXx6U8ABQ',
+            playerVars: {
+              autoplay: 1,
+            }
+          }); */
+          
+        }
+      },
+      vuetify: new Vuetify({
+        theme: {
+          dark: true,
+          themes: {
+            dark: {
+              primary: '#E6DC09'
+            },
+          },
+        },
+      }),
     })
   </script>
 </body>
+
 </html>
