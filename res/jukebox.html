@@ -35,10 +35,10 @@
       <v-main class="mainwin">
         <v-container class="white--text">{{pageTitle}}</v-container>
         
+        <!--
         <v-container>
-          <v-btn v-on:click="play" color="teal darken-4">Play</v-btn>
-          <v-btn v-on:click="play2" color="teal darken-4">Play2</v-btn>
-        </v-container>
+          <v-btn v-on:click="myMethod" color="teal darken-4">Play</v-btn>
+        </v-container> -->
 
         <!--
         <iframe width="640" height="360" 
@@ -49,13 +49,6 @@
         <div id="ytplayer"></div>
 
         <v-container>
-          <!--
-          <ul id="example-1">
-            <li v-for="item in playlist.items" :key="item.title">
-              {{ item.title }}
-            </li>
-          </ul> -->
-
           <v-list two-line>
             <v-list-item-group
               active-class="pink--text"
@@ -115,7 +108,6 @@
     }
 
     new Vue({
-      el: '#app',
       data: { 
         pageTitle: 'JukeBOX',
         playlist: {
@@ -123,18 +115,13 @@
 
            { title: 'Save Your Tears', interpret: 'The Weeknd', id: 'XXYlFuWEuKI' },
            { title: 'Blinding Lights', interpret: 'The Weeknd', id: '4NRXx6U8ABQ' },
-           /*
-           { title: 'Foo-2' },
-           { title: 'Foo-3' },
-           { title: 'Bar-1' },
-           { title: 'Bar-2' },
-           { title: 'Bar-3' } */
+
           ]
         },
       },
       methods: {
-        play: function (event) {
-          console.log('play() called')
+        initYtPlayer: function (event) {
+          console.log('initYtPlayer() called')
 
           // https://www.youtube.com/watch?v=XXYlFuWEuKI
           // Change "watch?v=" to "embed/"
@@ -154,6 +141,7 @@
           }
         },
 
+        /*
         play2: function (event) {
 
           // player.playVideo()
@@ -161,7 +149,6 @@
           //
           // https://developers.google.com/youtube/iframe_api_reference#loadVideoById
 
-          /*
           player = new YT.Player('ytplayer', {
             height: '360',
             width: '640',
@@ -169,16 +156,23 @@
             playerVars: {
               autoplay: 1,
             }
-          }); */
+          }); 
 
           actualVideoId = '4NRXx6U8ABQ'
           player.loadVideoById(actualVideoId)
-        },
+        }, */
         onSelectSong: function (selectedItem) {
           console.log('onSelectSong() title=' + selectedItem.title)
           actualVideoId = selectedItem.id
+          this.playVideoWithId()
+        },
+        playVideoWithId: function () {
           player.loadVideoById(actualVideoId)
         }
+      },
+      mounted: function () {
+        console.log('vuejs app mounted')
+        this.initYtPlayer()
       },
       vuetify: new Vuetify({
         theme: {
@@ -190,7 +184,7 @@
           },
         },
       }),
-    })
+    }).$mount('#app')
   </script>
 </body>
 
