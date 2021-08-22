@@ -13,6 +13,7 @@ cargo build
 ## Run (everything after -- are program arguments)
 ```
 cargo run -- --ui
+cargo run -- --ui --loglevel info --ip 0.0.0.0
 ```
 It wil run ./target/debug/webapp
 
