@@ -15,6 +15,10 @@
       background: linear-gradient(90deg, rgba(14,36,51,1) 0%, rgba(9,87,121,1) 85%);
     }
 
+    .bgtransparent {
+      opacity: 0.4;
+    }
+
     h1 {
       color: blue;
     }
@@ -49,9 +53,9 @@
         <div id="ytplayer"></div>
 
         <v-container>
-          <v-list two-line>
+          <v-list class="bgtransparent" two-line>
             <v-list-item-group
-              active-class="pink--text"
+              active-class="blue--text"
             >
               <template v-for="(item, index) in playlist.items">
                 <v-list-item :key="item.message" @click="onSelectSong(item)">
@@ -99,22 +103,38 @@
       player = new YT.Player('ytplayer', {
         height: '360',
         width: '640',
-        /*
-        videoId: 'XXYlFuWEuKI', */
+        /* videoId: 'XXYlFuWEuKI', */
+        events: {
+          'onReady': onYouTubePlayerReady,
+        },
         playerVars: {
+          // emulate 'autoplay' with events 'onReady'
           autoplay: 1,
+          playsinline: 1,
+          rel: 0,
+          showinfo: 0,
+          modestbranding: 1,
+          controls: 1,
+          loop: 1,
+          mute: 0,
         }
       }); 
     }
 
+    function onYouTubePlayerReady(event) {
+      //event.target.mute()
+      event.target.playVideo()
+    }
+
     new Vue({
       data: { 
-        pageTitle: 'JukeBOX',
+        pageTitle: 'JukeBOX-v0.0.10',
         playlist: {
           items: [
 
-           { title: 'Save Your Tears', interpret: 'The Weeknd', id: 'XXYlFuWEuKI' },
-           { title: 'Blinding Lights', interpret: 'The Weeknd', id: '4NRXx6U8ABQ' },
+            { title: 'Black Hole', interpret: 'Griff', id: 'B2SK_jb68dk' },
+            { title: 'Save Your Tears', interpret: 'The Weeknd', id: 'XXYlFuWEuKI' },
+            { title: 'Blinding Lights', interpret: 'The Weeknd', id: '4NRXx6U8ABQ' },
 
           ]
         },
@@ -168,6 +188,9 @@
         },
         playVideoWithId: function () {
           player.loadVideoById(actualVideoId)
+          console.log('play video with id=' + actualVideoId)
+          //player.unMute()
+          //player.cueVideoById(actualVideoId)
         }
       },
       mounted: function () {
