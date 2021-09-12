@@ -53,7 +53,9 @@
         <div id="ytplayer"></div>
 
         <v-container>
-          <v-list class="bgtransparent" two-line>
+          <!--
+          <v-list class="bgtransparent" two-line> -->
+          <v-list class="overflow-y-auto bgtransparent" max-height="350">
             <v-list-item-group
               active-class="blue--text"
             >
@@ -98,11 +100,26 @@
     var player;
     var actualVideoId;
 
+    function calculateRatioHeight(width){ return Math.round((width/16)*9); }
+
     function onYouTubePlayerAPIReady() {
-      
+
+      var ytPlayerWidth = window.screen.width;
+      var ytPlayerHeight = calculateRatioHeight(ytPlayerWidth)
+
+      console.log("set ytPlayer.width to " + ytPlayerWidth)
+      console.log("set ytPlayer.height to " + ytPlayerHeight)
+
       player = new YT.Player('ytplayer', {
-        height: '360',
-        width: '640',
+        /* old: 
+            height: '360',
+            width: '640',
+
+            height: '240',
+            width: '426',
+        */
+        height: ytPlayerHeight,
+        width: ytPlayerWidth,
         /* videoId: 'XXYlFuWEuKI', */
         events: {
           'onReady': onYouTubePlayerReady,
@@ -128,7 +145,7 @@
 
     new Vue({
       data: { 
-        pageTitle: 'JukeBOX-v0.0.10',
+        pageTitle: 'JukeBOX-v0.0.20',
         playlist: {
           items: [
 
@@ -136,6 +153,39 @@
             { title: 'Save Your Tears', interpret: 'The Weeknd', id: 'XXYlFuWEuKI' },
             { title: 'Blinding Lights', interpret: 'The Weeknd', id: '4NRXx6U8ABQ' },
 
+            { title: 'Summertime Sadness', interpret: 'Lana Del Rey', id: 'TdrL3QxjyVw' },
+            { title: 'Born To Die', interpret: 'Lana Del Rey', id: 'Bag1gUxuU0g' },
+            { title: 'Video Games', interpret: 'Lana Del Rey', id: 'cE6wxDqdOV0' },
+
+            { title: 'Tuesday ft. Danelle Sandoval', interpret: 'Burak Yeter', id: 'Y1_VsyLAGuk' },
+
+            { title: 'Back To Black', interpret: 'Amy Winehouse', id: 'TJAfLE39ZZ8' },
+
+            { title: 'Rolling in the Deep', interpret: 'Adele', id: 'rYEDA3JcQqw' },
+            { title: 'Hello', interpret: 'Adele', id: 'YQHsXMglC9A' },
+            { title: 'Someone Like You', interpret: 'Adele', id: 'hLQl3WQQoQ0' },
+
+            { title: 'Geiles Leben', interpret: 'Glasperlenspiel', id: 'B3VeqAfVDRc' },
+
+            { title: 'Sugar', interpret: 'Robin Schulz', id: 'bvC_0foemLY' },
+
+            { title: 'Run', interpret: 'Snow Patrol', id: 'AOBs8dU4Pb8' },
+            { title: 'Run', interpret: 'Leona Lewis', id: 'jqpAgMxhx30' },
+
+            { title: 'Leave a Light On', interpret: 'Tom Walker', id: 'nqnkBdExjws' },
+            { title: 'Another Love', interpret: 'Tom Odell', id: 'MwpMEbgC7DA' },
+
+            { title: 'Believer', interpret: 'Imagine Dragons', id: '7wtfhZwyrcc' },
+
+            { title: 'Wild Love', interpret: 'Rea Garvey', id: 'chL-nVD1G8w' },
+
+            { title: 'The Scientist', interpret: 'Coldplay', id: 'RB-RcX5DS5A' },
+
+            { title: 'Slow It Down', interpret: 'Amy Macdonald', id: 'oGwXzrW5mFc' },
+
+            { title: 'Move in the Right Direction', interpret: 'Gossip', id: '12zPU-8bsTE' },
+
+            { title: 'Prayer In C', interpret: 'Lilly Wood & The Prick and Robin Schulz', id: 'fiore9Z5iUg' },
           ]
         },
       },
